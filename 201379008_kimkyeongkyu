@@ -1,0 +1,1341 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "D:\\study\\Anaconda\\lib\\site-packages\\IPython\\config.py:13: ShimWarning: The `IPython.config` package has been deprecated since IPython 4.0. You should import from traitlets.config instead.\n",
+      "  \"You should import from traitlets.config instead.\", ShimWarning)\n",
+      "D:\\study\\Anaconda\\lib\\site-packages\\IPython\\utils\\traitlets.py:5: UserWarning: IPython.utils.traitlets has moved to a top-level traitlets package.\n",
+      "  warn(\"IPython.utils.traitlets has moved to a top-level traitlets package.\")\n"
+     ]
+    }
+   ],
+   "source": [
+    "%load_ext sql"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Connected: None@sample1.db'"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql sqlite:///sample1.db"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "Done.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "create table dept (\n",
+    "        deptno int not null,\n",
+    "        deptname char(10),\n",
+    "        floor int,\n",
+    "        primary key (deptno)\n",
+    "        );\n",
+    "\n",
+    "insert into dept values(1, '영업', 8);\n",
+    "insert into dept values(2, '기획', 10);\n",
+    "insert into dept values(3, '개발', 9);\n",
+    "insert into dept values(4, '총부', 7);\n",
+    "\n",
+    "create table emp (\n",
+    "        empno int not null,\n",
+    "        empname char(10) unique,\n",
+    "        title char(10) default '사원',\n",
+    "        manager int,\n",
+    "        salary int check(salary < 6000000),\n",
+    "        dno int,\n",
+    "        primary key(empno),\n",
+    "        foreign key(manager) references emp(empno),\n",
+    "        foreign key(dno) references dept(deptno) on update cascade\n",
+    "        );\n",
+    "\n",
+    "insert into emp values(4377, '이성래', '사장', NULL, 5000000, 2);\n",
+    "insert into emp values(3426, '박영권', '과장', 4377, 3000000, 1);\n",
+    "insert into emp values(3011, '이수민', '부장', 4377, 4000000, 3);\n",
+    "insert into emp values(3427, '최종철', '사원', 3011, 1500000, 3);\n",
+    "insert into emp values(1003, '조민희', '과장', 4377, 3000000, 2);\n",
+    "insert into emp values(2106, '김창섭', '대리', 1003, 2500000, 2);\n",
+    "insert into emp values(1365, '김상원', '사원', 3426, 1500000, 1);\n",
+    "\n",
+    "\n",
+    "create view emp_planning\n",
+    "        as\n",
+    "        select e.empname, e.title, e.salary\n",
+    "        from emp e, dept d\n",
+    "        where e.dno = d.deptno and d.deptname = '기획'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>type</th>\n",
+       "        <th>name</th>\n",
+       "        <th>tbl_name</th>\n",
+       "        <th>rootpage</th>\n",
+       "        <th>sql</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>table</td>\n",
+       "        <td>dept</td>\n",
+       "        <td>dept</td>\n",
+       "        <td>2</td>\n",
+       "        <td>CREATE TABLE dept (<br>        deptno int not null,<br>        deptname char(10),<br>        floor int,<br>        primary key (deptno)<br>        )</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>table</td>\n",
+       "        <td>emp</td>\n",
+       "        <td>emp</td>\n",
+       "        <td>4</td>\n",
+       "        <td>CREATE TABLE emp (<br>        empno int not null,<br>        empname char(10) unique,<br>        title char(10) default &#x27;사원&#x27;,<br>        manager int,<br>        salary int check(salary &lt; 6000000),<br>        dno int,<br>        primary key(empno),<br>        foreign key(manager) references emp(empno),<br>        foreign key(dno) references dept(deptno) on update cascade<br>        )</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('table', 'dept', 'dept', 2, 'CREATE TABLE dept (\\n        deptno int not null,\\n        deptname char(10),\\n        floor int,\\n        primary key (deptno)\\n        )'),\n",
+       " ('table', 'emp', 'emp', 4, \"CREATE TABLE emp (\\n        empno int not null,\\n        empname char(10) unique,\\n        title char(10) default '사원',\\n        manager int,\\n       ... (67 characters truncated) ... imary key(empno),\\n        foreign key(manager) references emp(empno),\\n        foreign key(dno) references dept(deptno) on update cascade\\n        )\")]"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from sqlite_master where type='table'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>type</th>\n",
+       "        <th>name</th>\n",
+       "        <th>tbl_name</th>\n",
+       "        <th>rootpage</th>\n",
+       "        <th>sql</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>view</td>\n",
+       "        <td>emp_planning</td>\n",
+       "        <td>emp_planning</td>\n",
+       "        <td>0</td>\n",
+       "        <td>CREATE VIEW emp_planning<br>        as<br>        select e.empname, e.title, e.salary<br>        from emp e, dept d<br>        where e.dno = d.deptno and d.deptname = &#x27;기획&#x27;</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('view', 'emp_planning', 'emp_planning', 0, \"CREATE VIEW emp_planning\\n        as\\n        select e.empname, e.title, e.salary\\n        from emp e, dept d\\n        where e.dno = d.deptno and d.deptname = '기획'\")]"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from sqlite_master where type='view'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>deptno</th>\n",
+       "        <th>deptname</th>\n",
+       "        <th>floor</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1</td>\n",
+       "        <td>영업</td>\n",
+       "        <td>8</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2</td>\n",
+       "        <td>기획</td>\n",
+       "        <td>10</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>3</td>\n",
+       "        <td>개발</td>\n",
+       "        <td>9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>4</td>\n",
+       "        <td>총부</td>\n",
+       "        <td>7</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(1, '영업', 8), (2, '기획', 10), (3, '개발', 9), (4, '총부', 7)]"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from dept"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>empno</th>\n",
+       "        <th>empname</th>\n",
+       "        <th>title</th>\n",
+       "        <th>manager</th>\n",
+       "        <th>salary</th>\n",
+       "        <th>dno</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>4377</td>\n",
+       "        <td>이성래</td>\n",
+       "        <td>사장</td>\n",
+       "        <td>None</td>\n",
+       "        <td>5000000</td>\n",
+       "        <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>3426</td>\n",
+       "        <td>박영권</td>\n",
+       "        <td>과장</td>\n",
+       "        <td>4377</td>\n",
+       "        <td>3000000</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>3011</td>\n",
+       "        <td>이수민</td>\n",
+       "        <td>부장</td>\n",
+       "        <td>4377</td>\n",
+       "        <td>4000000</td>\n",
+       "        <td>3</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>3427</td>\n",
+       "        <td>최종철</td>\n",
+       "        <td>사원</td>\n",
+       "        <td>3011</td>\n",
+       "        <td>1500000</td>\n",
+       "        <td>3</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1003</td>\n",
+       "        <td>조민희</td>\n",
+       "        <td>과장</td>\n",
+       "        <td>4377</td>\n",
+       "        <td>3000000</td>\n",
+       "        <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2106</td>\n",
+       "        <td>김창섭</td>\n",
+       "        <td>대리</td>\n",
+       "        <td>1003</td>\n",
+       "        <td>2500000</td>\n",
+       "        <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1365</td>\n",
+       "        <td>김상원</td>\n",
+       "        <td>사원</td>\n",
+       "        <td>3426</td>\n",
+       "        <td>1500000</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(4377, '이성래', '사장', None, 5000000, 2),\n",
+       " (3426, '박영권', '과장', 4377, 3000000, 1),\n",
+       " (3011, '이수민', '부장', 4377, 4000000, 3),\n",
+       " (3427, '최종철', '사원', 3011, 1500000, 3),\n",
+       " (1003, '조민희', '과장', 4377, 3000000, 2),\n",
+       " (2106, '김창섭', '대리', 1003, 2500000, 2),\n",
+       " (1365, '김상원', '사원', 3426, 1500000, 1)]"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from emp"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>empname</th>\n",
+       "        <th>title</th>\n",
+       "        <th>salary</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>이성래</td>\n",
+       "        <td>사장</td>\n",
+       "        <td>5000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>조민희</td>\n",
+       "        <td>과장</td>\n",
+       "        <td>3000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>김창섭</td>\n",
+       "        <td>대리</td>\n",
+       "        <td>2500000</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('이성래', '사장', 5000000), ('조민희', '과장', 3000000), ('김창섭', '대리', 2500000)]"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from emp_planning"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Connected: None@sample2.db'"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql sqlite:///sample2.db"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n",
+      "Done.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "create table student (\n",
+    "        sid smallint constraint const_student_pk PRIMARY KEY,\n",
+    "        sname char(20) NULL,\n",
+    "        major varchar(30) NULL,\n",
+    "        gradelevel char(2)\n",
+    "        constraint const_student_gr check ( gradelevel in ('GR', 'SO', 'GR', 'SN', 'JR', 'FR')),\n",
+    "        Age smallint NULL\n",
+    "        constraint const_student_age check ( age > 0 )\n",
+    ") ;\n",
+    "\n",
+    "\n",
+    "create table class (\n",
+    "        cname char(5),\n",
+    "        time varchar(7),\n",
+    "        room char(5),\n",
+    "        constraint const_class_pk primary key (cname)\n",
+    "        );\n",
+    "\n",
+    "create table enrollment (\n",
+    "        studentnumber smallint,\n",
+    "        classname char(5),\n",
+    "        positionnumber smallint,\n",
+    "        constraint const_enroll_pk primary key (studentnumber, classname),\n",
+    "        constraint const_enroll_fk_snum foreign key (studentnumber) references student(sid),\n",
+    "        constraint const_enroll_fk_cname foreign key (classname) references class(cname)\n",
+    ");\n",
+    "\n",
+    "\n",
+    "insert into student values ( 100, 'JONES', 'HISTORY', 'GR', 21);\n",
+    "insert into student values ( 150, 'PARKS', 'ACCOUNTING', 'SO', 19);\n",
+    "insert into student values ( 200, 'BAKER', 'MATH', 'GR', 50);\n",
+    "insert into student values ( 250, 'GLASS', 'HISTORY', 'SN', 50);\n",
+    "insert into student values ( 300, 'BAKER', 'ACCOUNTING', 'SN', 41);\n",
+    "insert into student values ( 350, 'RUSSEL', 'MATH', 'JR', 20);\n",
+    "insert into student values ( 400, 'RYE', 'ACCOUNTING', 'FR', 18);\n",
+    "insert into student values ( 450, 'JONES', 'HISTORY', 'SN', 24);\n",
+    "\n",
+    "insert into class values ( 'BA200', 'M-F9', 'SC110');\n",
+    "insert into class values ( 'BD445', 'MWF3', 'SC213');\n",
+    "insert into class values ( 'BF410', 'MWF8', 'SC213');\n",
+    "insert into class values ( 'CS150', 'MWF3', 'EA304');\n",
+    "insert into class values ( 'CS250', 'MWF12', 'EB210');\n",
+    "\n",
+    "insert into enrollment values (100, 'BD445', 1);\n",
+    "insert into enrollment values (150, 'BA200', 1);\n",
+    "insert into enrollment values (200, 'BD445', 2);\n",
+    "insert into enrollment values (200, 'CS250', 1);\n",
+    "insert into enrollment values (300, 'CS150', 1);\n",
+    "insert into enrollment values (400, 'BA200', 2);\n",
+    "insert into enrollment values (400, 'BF410', 1);\n",
+    "insert into enrollment values (400, 'CS250', 2);\n",
+    "insert into enrollment values (450, 'BA200', 3);"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>type</th>\n",
+       "        <th>name</th>\n",
+       "        <th>tbl_name</th>\n",
+       "        <th>rootpage</th>\n",
+       "        <th>sql</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>table</td>\n",
+       "        <td>student</td>\n",
+       "        <td>student</td>\n",
+       "        <td>2</td>\n",
+       "        <td>CREATE TABLE student (<br>        sid smallint constraint const_student_pk PRIMARY KEY,<br>        sname char(20) NULL,<br>        major varchar(30) NULL,<br>        gradelevel char(2)<br>        constraint const_student_gr check ( gradelevel in (&#x27;GR&#x27;, &#x27;SO&#x27;, &#x27;GR&#x27;, &#x27;SN&#x27;, &#x27;JR&#x27;, &#x27;FR&#x27;)),<br>        Age smallint NULL<br>        constraint const_student_age check ( age &gt; 0 )<br>)</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>table</td>\n",
+       "        <td>class</td>\n",
+       "        <td>class</td>\n",
+       "        <td>4</td>\n",
+       "        <td>CREATE TABLE class (<br>        cname char(5),<br>        time varchar(7),<br>        room char(5),<br>        constraint const_class_pk primary key (cname)<br>        )</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>table</td>\n",
+       "        <td>enrollment</td>\n",
+       "        <td>enrollment</td>\n",
+       "        <td>6</td>\n",
+       "        <td>CREATE TABLE enrollment (<br>        studentnumber smallint,<br>        classname char(5),<br>        positionnumber smallint,<br>        constraint const_enroll_pk primary key (studentnumber, classname),<br>        constraint const_enroll_fk_snum foreign key (studentnumber) references student(sid),<br>        constraint const_enroll_fk_cname foreign key (classname) references class(cname)<br>)</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('table', 'student', 'student', 2, \"CREATE TABLE student (\\n        sid smallint constraint const_student_pk PRIMARY KEY,\\n        sname char(20) NULL,\\n        major varchar(30) NULL,\\ ... (62 characters truncated) ... gr check ( gradelevel in ('GR', 'SO', 'GR', 'SN', 'JR', 'FR')),\\n        Age smallint NULL\\n        constraint const_student_age check ( age > 0 )\\n)\"),\n",
+       " ('table', 'class', 'class', 4, 'CREATE TABLE class (\\n        cname char(5),\\n        time varchar(7),\\n        room char(5),\\n        constraint const_class_pk primary key (cname)\\n        )'),\n",
+       " ('table', 'enrollment', 'enrollment', 6, 'CREATE TABLE enrollment (\\n        studentnumber smallint,\\n        classname char(5),\\n        positionnumber smallint,\\n        constraint const_en ... (85 characters truncated) ... num foreign key (studentnumber) references student(sid),\\n        constraint const_enroll_fk_cname foreign key (classname) references class(cname)\\n)')]"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from sqlite_master where type='table'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>sid</th>\n",
+       "        <th>sname</th>\n",
+       "        <th>major</th>\n",
+       "        <th>gradelevel</th>\n",
+       "        <th>Age</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>100</td>\n",
+       "        <td>JONES</td>\n",
+       "        <td>HISTORY</td>\n",
+       "        <td>GR</td>\n",
+       "        <td>21</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>150</td>\n",
+       "        <td>PARKS</td>\n",
+       "        <td>ACCOUNTING</td>\n",
+       "        <td>SO</td>\n",
+       "        <td>19</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>200</td>\n",
+       "        <td>BAKER</td>\n",
+       "        <td>MATH</td>\n",
+       "        <td>GR</td>\n",
+       "        <td>50</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>250</td>\n",
+       "        <td>GLASS</td>\n",
+       "        <td>HISTORY</td>\n",
+       "        <td>SN</td>\n",
+       "        <td>50</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>300</td>\n",
+       "        <td>BAKER</td>\n",
+       "        <td>ACCOUNTING</td>\n",
+       "        <td>SN</td>\n",
+       "        <td>41</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>350</td>\n",
+       "        <td>RUSSEL</td>\n",
+       "        <td>MATH</td>\n",
+       "        <td>JR</td>\n",
+       "        <td>20</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>400</td>\n",
+       "        <td>RYE</td>\n",
+       "        <td>ACCOUNTING</td>\n",
+       "        <td>FR</td>\n",
+       "        <td>18</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>450</td>\n",
+       "        <td>JONES</td>\n",
+       "        <td>HISTORY</td>\n",
+       "        <td>SN</td>\n",
+       "        <td>24</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(100, 'JONES', 'HISTORY', 'GR', 21),\n",
+       " (150, 'PARKS', 'ACCOUNTING', 'SO', 19),\n",
+       " (200, 'BAKER', 'MATH', 'GR', 50),\n",
+       " (250, 'GLASS', 'HISTORY', 'SN', 50),\n",
+       " (300, 'BAKER', 'ACCOUNTING', 'SN', 41),\n",
+       " (350, 'RUSSEL', 'MATH', 'JR', 20),\n",
+       " (400, 'RYE', 'ACCOUNTING', 'FR', 18),\n",
+       " (450, 'JONES', 'HISTORY', 'SN', 24)]"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from student"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>cname</th>\n",
+       "        <th>time</th>\n",
+       "        <th>room</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>BA200</td>\n",
+       "        <td>M-F9</td>\n",
+       "        <td>SC110</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>BD445</td>\n",
+       "        <td>MWF3</td>\n",
+       "        <td>SC213</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>BF410</td>\n",
+       "        <td>MWF8</td>\n",
+       "        <td>SC213</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>CS150</td>\n",
+       "        <td>MWF3</td>\n",
+       "        <td>EA304</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>CS250</td>\n",
+       "        <td>MWF12</td>\n",
+       "        <td>EB210</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('BA200', 'M-F9', 'SC110'),\n",
+       " ('BD445', 'MWF3', 'SC213'),\n",
+       " ('BF410', 'MWF8', 'SC213'),\n",
+       " ('CS150', 'MWF3', 'EA304'),\n",
+       " ('CS250', 'MWF12', 'EB210')]"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from class"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>studentnumber</th>\n",
+       "        <th>classname</th>\n",
+       "        <th>positionnumber</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>100</td>\n",
+       "        <td>BD445</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>150</td>\n",
+       "        <td>BA200</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>200</td>\n",
+       "        <td>BD445</td>\n",
+       "        <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>200</td>\n",
+       "        <td>CS250</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>300</td>\n",
+       "        <td>CS150</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>400</td>\n",
+       "        <td>BA200</td>\n",
+       "        <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>400</td>\n",
+       "        <td>BF410</td>\n",
+       "        <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>400</td>\n",
+       "        <td>CS250</td>\n",
+       "        <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>450</td>\n",
+       "        <td>BA200</td>\n",
+       "        <td>3</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(100, 'BD445', 1),\n",
+       " (150, 'BA200', 1),\n",
+       " (200, 'BD445', 2),\n",
+       " (200, 'CS250', 1),\n",
+       " (300, 'CS150', 1),\n",
+       " (400, 'BA200', 2),\n",
+       " (400, 'BF410', 1),\n",
+       " (400, 'CS250', 2),\n",
+       " (450, 'BA200', 3)]"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from enrollment"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Connected: None@sample3.db'"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql sqlite:///sample3.db"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n",
+      "Done.\n",
+      "Done.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 17,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "create table s (\n",
+    "        sno char(5) NOT NULL primary key,\n",
+    "        sname char(10) NULL,\n",
+    "        city char(10) NULL\n",
+    "        );\n",
+    "\n",
+    "create table p (\n",
+    "        pno char(5) NOT NULL\n",
+    "        primary key,\n",
+    "        pname char(10) NULL,\n",
+    "        color char(10) NULL,\n",
+    "        WEIGHT SMALLINT NULL,\n",
+    "        city char(10) NULL\n",
+    "        );\n",
+    "\n",
+    "create table sp (\n",
+    "        sno char(5) NOT NULL,\n",
+    "        pno char(5) NOT NULL,\n",
+    "        qty SMALLINT NULL,\n",
+    "        constraint PK_SP primary key (sno, pno),\n",
+    "        constraint FK_SP_S foreign key (sno) references S on update cascade,\n",
+    "        constraint FK_SP_P foreign key (pno) references P on delete cascade\n",
+    "        );\n",
+    "\n",
+    "insert into s values ('s01', 'Smith', 'London');\n",
+    "insert into s values ('s02', 'jones', 'Paris');\n",
+    "insert into s values ('s03', 'blakes', 'Paris');\n",
+    "insert into s values ('s04', 'clark', 'London');\n",
+    "insert into s values ('s05', 'adams', 'Athenes');\n",
+    "\n",
+    "insert into p values ('p01', 'Nut', 'red', 12, 'London');\n",
+    "insert into p values ('p02', 'Bolt', 'green', 17, 'Paris');\n",
+    "insert into p values ('p03', 'Screw', 'blue', 17, 'Rome');\n",
+    "insert into p values ('p04', 'Screw', 'red', 14, 'London');\n",
+    "insert into p values ('p05', 'cam', 'blue', 12, 'Paris');\n",
+    "insert into p values ('p06', 'cog', 'red', 19, 'London');\n",
+    "\n",
+    "insert into sp values ('s01', 'p01', 300);\n",
+    "insert into sp values ('s01', 'p02', 200);\n",
+    "insert into sp values ('s01', 'p03', 400);\n",
+    "insert into sp values ('s01', 'p04', 500);\n",
+    "insert into sp values ('s01', 'p05', 100);\n",
+    "insert into sp values ('s01', 'p06', 200);\n",
+    "insert into sp values ('s02', 'p01', 300);\n",
+    "insert into sp values ('s02', 'p02', 400);\n",
+    "insert into sp values ('s03', 'p02', 200);\n",
+    "insert into sp values ('s04', 'p04', 300);\n",
+    "insert into sp values ('s05', 'p05', 400);"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>type</th>\n",
+       "        <th>name</th>\n",
+       "        <th>tbl_name</th>\n",
+       "        <th>rootpage</th>\n",
+       "        <th>sql</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>table</td>\n",
+       "        <td>s</td>\n",
+       "        <td>s</td>\n",
+       "        <td>2</td>\n",
+       "        <td>CREATE TABLE s (<br>        sno char(5) NOT NULL primary key,<br>        sname char(10) NULL,<br>        city char(10) NULL<br>        )</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>table</td>\n",
+       "        <td>p</td>\n",
+       "        <td>p</td>\n",
+       "        <td>4</td>\n",
+       "        <td>CREATE TABLE p (<br>        pno char(5) NOT NULL<br>        primary key,<br>        pname char(10) NULL,<br>        color char(10) NULL,<br>        WEIGHT SMALLINT NULL,<br>        city char(10) NULL<br>        )</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>table</td>\n",
+       "        <td>sp</td>\n",
+       "        <td>sp</td>\n",
+       "        <td>6</td>\n",
+       "        <td>CREATE TABLE sp (<br>        sno char(5) NOT NULL,<br>        pno char(5) NOT NULL,<br>        qty SMALLINT NULL,<br>        constraint PK_SP primary key (sno, pno),<br>        constraint FK_SP_S foreign key (sno) references S on update cascade,<br>        constraint FK_SP_P foreign key (pno) references P on delete cascade<br>        )</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('table', 's', 's', 2, 'CREATE TABLE s (\\n        sno char(5) NOT NULL primary key,\\n        sname char(10) NULL,\\n        city char(10) NULL\\n        )'),\n",
+       " ('table', 'p', 'p', 4, 'CREATE TABLE p (\\n        pno char(5) NOT NULL\\n        primary key,\\n        pname char(10) NULL,\\n        color char(10) NULL,\\n        WEIGHT SMALLINT NULL,\\n        city char(10) NULL\\n        )'),\n",
+       " ('table', 'sp', 'sp', 6, 'CREATE TABLE sp (\\n        sno char(5) NOT NULL,\\n        pno char(5) NOT NULL,\\n        qty SMALLINT NULL,\\n        constraint PK_SP primary key (sn ... (25 characters truncated) ... int FK_SP_S foreign key (sno) references S on update cascade,\\n        constraint FK_SP_P foreign key (pno) references P on delete cascade\\n        )')]"
+      ]
+     },
+     "execution_count": 22,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from sqlite_master where type='table'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>sno</th>\n",
+       "        <th>sname</th>\n",
+       "        <th>city</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s01</td>\n",
+       "        <td>Smith</td>\n",
+       "        <td>London</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s02</td>\n",
+       "        <td>jones</td>\n",
+       "        <td>Paris</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s03</td>\n",
+       "        <td>blakes</td>\n",
+       "        <td>Paris</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s04</td>\n",
+       "        <td>clark</td>\n",
+       "        <td>London</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s05</td>\n",
+       "        <td>adams</td>\n",
+       "        <td>Athenes</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('s01', 'Smith', 'London'),\n",
+       " ('s02', 'jones', 'Paris'),\n",
+       " ('s03', 'blakes', 'Paris'),\n",
+       " ('s04', 'clark', 'London'),\n",
+       " ('s05', 'adams', 'Athenes')]"
+      ]
+     },
+     "execution_count": 23,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from s"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>pno</th>\n",
+       "        <th>pname</th>\n",
+       "        <th>color</th>\n",
+       "        <th>WEIGHT</th>\n",
+       "        <th>city</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>p01</td>\n",
+       "        <td>Nut</td>\n",
+       "        <td>red</td>\n",
+       "        <td>12</td>\n",
+       "        <td>London</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>p02</td>\n",
+       "        <td>Bolt</td>\n",
+       "        <td>green</td>\n",
+       "        <td>17</td>\n",
+       "        <td>Paris</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>p03</td>\n",
+       "        <td>Screw</td>\n",
+       "        <td>blue</td>\n",
+       "        <td>17</td>\n",
+       "        <td>Rome</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>p04</td>\n",
+       "        <td>Screw</td>\n",
+       "        <td>red</td>\n",
+       "        <td>14</td>\n",
+       "        <td>London</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>p05</td>\n",
+       "        <td>cam</td>\n",
+       "        <td>blue</td>\n",
+       "        <td>12</td>\n",
+       "        <td>Paris</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>p06</td>\n",
+       "        <td>cog</td>\n",
+       "        <td>red</td>\n",
+       "        <td>19</td>\n",
+       "        <td>London</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('p01', 'Nut', 'red', 12, 'London'),\n",
+       " ('p02', 'Bolt', 'green', 17, 'Paris'),\n",
+       " ('p03', 'Screw', 'blue', 17, 'Rome'),\n",
+       " ('p04', 'Screw', 'red', 14, 'London'),\n",
+       " ('p05', 'cam', 'blue', 12, 'Paris'),\n",
+       " ('p06', 'cog', 'red', 19, 'London')]"
+      ]
+     },
+     "execution_count": 24,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from p"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>sno</th>\n",
+       "        <th>pno</th>\n",
+       "        <th>qty</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s01</td>\n",
+       "        <td>p01</td>\n",
+       "        <td>300</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s01</td>\n",
+       "        <td>p02</td>\n",
+       "        <td>200</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s01</td>\n",
+       "        <td>p03</td>\n",
+       "        <td>400</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s01</td>\n",
+       "        <td>p04</td>\n",
+       "        <td>500</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s01</td>\n",
+       "        <td>p05</td>\n",
+       "        <td>100</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s01</td>\n",
+       "        <td>p06</td>\n",
+       "        <td>200</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s02</td>\n",
+       "        <td>p01</td>\n",
+       "        <td>300</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s02</td>\n",
+       "        <td>p02</td>\n",
+       "        <td>400</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s03</td>\n",
+       "        <td>p02</td>\n",
+       "        <td>200</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s04</td>\n",
+       "        <td>p04</td>\n",
+       "        <td>300</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>s05</td>\n",
+       "        <td>p05</td>\n",
+       "        <td>400</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[('s01', 'p01', 300),\n",
+       " ('s01', 'p02', 200),\n",
+       " ('s01', 'p03', 400),\n",
+       " ('s01', 'p04', 500),\n",
+       " ('s01', 'p05', 100),\n",
+       " ('s01', 'p06', 200),\n",
+       " ('s02', 'p01', 300),\n",
+       " ('s02', 'p02', 400),\n",
+       " ('s03', 'p02', 200),\n",
+       " ('s04', 'p04', 300),\n",
+       " ('s05', 'p05', 400)]"
+      ]
+     },
+     "execution_count": 25,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "select * from sp"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
